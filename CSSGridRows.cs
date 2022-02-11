@@ -5,7 +5,7 @@ public class CSSGridRows : MonoBehaviour
 {
     [Tooltip("Controls the size of the grid in fractional units.")]
     [Min(1f)]
-    public float[] FractionalSizes;
+    public float[] FlexValues;
 
     [Header("Padding")]
     public float PaddingTop;
@@ -45,12 +45,19 @@ public class CSSGridRows : MonoBehaviour
     {
         if (cache)
         {
-            rows = GetComponentsInChildren<RectTransform>();
+            int i = 0;
+            rows = new RectTransform[transform.childCount];
+
+            foreach (Transform child in transform)
+            {
+                rows[i++] = child.GetComponent<RectTransform>();
+            }
+
             _rect = GetComponent<RectTransform>();
         }
 
         // Calculate the available size after subtracting the padding.
-        float availHeight = _rect.sizeDelta.y - PaddingTop - PaddingBottom - (FractionalSizes.Length - 1) * RowGap;
+        float availHeight = _rect.sizeDelta.y - PaddingTop - PaddingBottom - (FlexValues.Length - 1) * RowGap;
         float availWidth = _rect.sizeDelta.x - PaddingLeft - PaddingRight;
         
         // Get the total fraction sum.
@@ -62,9 +69,9 @@ public class CSSGridRows : MonoBehaviour
         float previousRowGap = 0f;
 
         // Loop through the rows.
-        for (int i = 0; i < FractionalSizes.Length; i++)
+        for (int i = 0; i < FlexValues.Length; i++)
         {
-            float row = FractionalSizes[i];
+            float row = FlexValues[i];
             
             // Set the fractional row height.
             float rowHeight = availHeight * row / totalFrac;
@@ -78,13 +85,13 @@ public class CSSGridRows : MonoBehaviour
             previousRowGap = RowGap;
 
             // Make sure the anchors are correct.
-            rows[i + 1].anchorMin = new Vector2(0, 1);
-            rows[i + 1].anchorMax = new Vector2(0, 1);
-            rows[i + 1].pivot = new Vector2(0, 1);
+            rows[i].anchorMin = new Vector2(0, 1);
+            rows[i].anchorMax = new Vector2(0, 1);
+            rows[i].pivot = new Vector2(0, 1);
 
             // Set the position and size.
-            rows[i + 1].anchoredPosition = new Vector2(PaddingLeft, rowPosY);
-            rows[i + 1].sizeDelta = new Vector2(availWidth, rowHeight);
+            rows[i].anchoredPosition = new Vector2(PaddingLeft, rowPosY);
+            rows[i].sizeDelta = new Vector2(availWidth, rowHeight);
         }
     }
 
@@ -96,7 +103,7 @@ public class CSSGridRows : MonoBehaviour
     {
         float sum = 0;
 
-        foreach (float row in FractionalSizes) sum += row;
+        foreach (float row in FlexValues) sum += row;
 
         return sum;
     }
